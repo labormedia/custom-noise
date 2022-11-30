@@ -1,16 +1,22 @@
-use std::{
-    io::{prelude::*, BufReader, BufWriter},
-    net::{TcpListener, TcpStream, Shutdown},
+use async_std::{
+    net::{TcpListener, TcpStream},
 };
+use custom_noise::noise::NoiseInstance;
+use snow::TransportState;
+use async_std::stream::StreamExt;
 
-fn main() {
-    let listener = TcpListener::bind("127.0.0.1:33100").unwrap();
+#[async_std::main]
+async fn main() {
+    static SECRET: &[u8] = b"we care a lot";
+    // secret.copy_from_slice(b"we care a lot") ;
+    let listener = TcpListener::bind("127.0.0.1:33100").await.unwrap();
     loop {
-        match listener.incoming().next() {
+        match listener.incoming().next().await {
             Some(stream) => {
-                let stream = stream.unwrap();
-        
-                handle(stream);
+                let async_stream = stream.unwrap();
+                let noise_instance = custom_noise::noise::NoiseInstance::responder_from_secret(async_stream, SECRET);
+                handle_handshake(noise_instance).await;
+                println!("Session established ?");
                 break ();
             }
             _ => { println!("Some other event") }
@@ -18,23 +24,9 @@ fn main() {
     }
 }
 
-fn handle(mut stream: TcpStream) {
-
-}
-
-fn default_handle(mut stream: TcpStream) {
-    println!("handling connection");
-    let buf_reader = BufReader::new(&mut stream);
-    let tcp_request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| {
-            println!("got here");
-            !line.contains("some_handle")
-        })
-        .collect();
-    println!("Request: {:#?}", tcp_request);
-
-    println!("Hello response");
-    stream.write(&"Thank you\nH\nsome_handle".to_string().into_bytes()).unwrap();
+async fn handle_handshake(mut noise_instance: NoiseInstance) {
+    noise_instance.handshake_listen().await;
+    noise_instance.handshake_send(&[0u8; 0]).await;
+    noise_instance.handshake_listen().await;
+    noise_instance.transport_listen().await;
 }

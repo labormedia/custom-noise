@@ -4,9 +4,17 @@ use async_std::stream::StreamExt;
 
 #[async_std::main]
 async fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    println!("Arguments: {:?}", args);
+    if &args.len() < &3 {
+        usage_message(); 
+        panic!("Expected parameters")
+    }
+
+    let local_address = "127.0.0.1:33100";
+    let address = &[&args[1], ":", &args[2]].concat();
+
     static SECRET: &[u8] = b"we care a lot";
-    // secret.copy_from_slice(b"we care a lot") ;
-    let address = "127.0.0.1:33100";
     let listener = TcpListener::bind(address).await.unwrap();
     println!("Listening on address : {:?}", address);
 
@@ -29,4 +37,11 @@ async fn listen_nn_handshake(mut noise_instance: NoiseInstance) {
     noise_instance.handshake_send(&[0u8; 0]).await;
     noise_instance.handshake_listen().await;
     noise_instance.transport_listen().await;
+}
+
+fn usage_message() {
+    println!("
+    Usage: ./target/debug/examples/responder [IP] [PORT]
+    [IP] and [PORT] are the expected network interfaces, which need to be a valid address for the responder host (example : 127.0.0.1 33100).
+    ")
 }

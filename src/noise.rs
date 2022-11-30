@@ -74,7 +74,7 @@ impl NoiseInstance {
         self.stream.write(buf).await.unwrap();
     }
 
-    /// Hyper-basic stream transport receiver. 16-bit BE size followed by payload.
+    /// Reference : https://github.com/mcginty/snow/blob/master/examples/simple.rs#L110
     pub async fn recv(&mut self) -> io::Result<Vec<u8>> {
         let mut msg_len_buf = [0u8; 2];
         self.stream.read_exact(&mut msg_len_buf).await.unwrap(); 
@@ -84,7 +84,7 @@ impl NoiseInstance {
         Ok(msg)
     }
 
-    /// Hyper-basic stream transport sender. 16-bit BE size followed by payload.
+    /// Reference : https://github.com/mcginty/snow/blob/master/examples/simple.rs#L121
     pub async fn send(&mut self, len: usize) {
         let buf = &self.buffer[..len];
         let msg_len_buf = [(buf.len() >> 8) as u8, (buf.len() & 0xff) as u8];

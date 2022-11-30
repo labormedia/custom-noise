@@ -6,7 +6,10 @@ use async_std::stream::StreamExt;
 async fn main() {
     static SECRET: &[u8] = b"we care a lot";
     // secret.copy_from_slice(b"we care a lot") ;
-    let listener = TcpListener::bind("127.0.0.1:33100").await.unwrap();
+    let address = "127.0.0.1:33100";
+    let listener = TcpListener::bind(address).await.unwrap();
+    println!("Listening on address : {:?}", address);
+
     loop {
         match listener.incoming().next().await {
             Some(stream) => {

@@ -4,7 +4,9 @@ use custom_noise::noise::NoiseInstance;
 #[async_std::main]
 async fn main() {
     static SECRET: &[u8; 13] = b"do care a lot";
-    let async_stream = TcpStream::connect("127.0.0.1:33100").await.unwrap();
+    let address = "127.0.0.1:33100";
+    let async_stream = TcpStream::connect(address).await.unwrap();
+    println!("Connecting to address : {:?}", address);
     let noise_instance = custom_noise::noise::NoiseInstance::initiator_from_secret(async_stream, SECRET);
     initiate_nn_handshake(noise_instance).await;
     println!("Session established.");

@@ -11,7 +11,7 @@ async fn main() {
         panic!("Expected parameters")
     }
 
-    let local_address = "127.0.0.1:33100";
+    // let local_address = "127.0.0.1:33100";
     let address = &[&args[1], ":", &args[2]].concat();
 
     static SECRET: &[u8] = b"we care a lot";

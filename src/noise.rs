@@ -1,15 +1,5 @@
-use std::borrow::Borrow;
-
-use futures::TryFutureExt;
-// use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, TcpListener};
-// use libp2p_core::{
-//     address_translation,
-//     multiaddr::{Multiaddr, Protocol},
-//     transport::{ListenerId, TransportError, TransportEvent},
-// };
 use async_std::net::TcpStream;
 use async_std::io::{ self, ReadExt, WriteExt };
-use libp2p_core::transport::{TransportError, self};
 use snow::TransportState;
 use snow::{
     HandshakeState,
@@ -22,7 +12,6 @@ pub struct NoiseInstance {
     pub buffer: Box<[u8]>,
     pub params: NoiseParams,
     handshake_state: HandshakeState,
-    transport_state: Option<TransportState>
 }
 
 impl NoiseInstance {
@@ -32,7 +21,6 @@ impl NoiseInstance {
             buffer: Box::new([0u8; 65535]),
             params,
             handshake_state,
-            transport_state: None
         }
     }
     pub fn responder_from_secret(stream: TcpStream, sec: &[u8]) -> Self  {
@@ -72,7 +60,7 @@ impl NoiseInstance {
         if let Ok(msg) = self.recv().await {
             let mut transport_state = self.handshake_state.into_transport_mode().unwrap();
             let size = transport_state.read_message(&msg, self.buffer.as_mut()).unwrap().clone();
-            println!("client said: {}", String::from_utf8_lossy(&self.buffer[..size]));
+            println!("Received : {}", String::from_utf8_lossy(&self.buffer[..size]));
         };
     }
 

@@ -26,13 +26,13 @@ impl NoiseInstance {
     pub fn responder_from_secret(stream: TcpStream, sec: &[u8]) -> Self  {
         let params: NoiseParams = "Noise_XX_25519_ChaChaPoly_SHA256".parse().unwrap();
         let builder: Builder<'_> = Builder::new(params.clone());
-        let state = builder.local_private_key(&sec).build_responder().unwrap();
+        let state = builder.local_private_key(sec).build_responder().unwrap();
         Self::build(stream, params, state)
     }
     pub fn initiator_from_secret(stream: TcpStream, sec: &[u8]) -> Self {
         let params: NoiseParams = "Noise_XX_25519_ChaChaPoly_SHA256".parse().unwrap();
         let builder: Builder<'_> = Builder::new(params.clone());
-        let state = builder.local_private_key(&sec).build_initiator().unwrap();
+        let state = builder.local_private_key(sec).build_initiator().unwrap();
         Self::build(stream, params, state)
     }
 
@@ -43,23 +43,22 @@ impl NoiseInstance {
     }
 
     pub async fn handshake_send(&mut self, payload: &[u8]) {
-        let len = self.handshake_state.write_message(&payload, &mut self.buffer).unwrap();
+        let len = self.handshake_state.write_message(payload, &mut self.buffer).unwrap();
         self.send(len).await;
     }
 
     pub fn into_transport_mode(self) -> Option<TransportState> {
-        let transport_state = if self.handshake_state.is_handshake_finished() {
+        if self.handshake_state.is_handshake_finished() {
             Some(self.handshake_state.into_transport_mode().unwrap())
         } else { 
             println!("Handshake is not finished yet.");
             None 
-        };
-        transport_state
+        }
     }
     pub async fn transport_listen(mut self) {
         if let Ok(msg) = self.recv().await {
             let mut transport_state = self.handshake_state.into_transport_mode().unwrap();
-            let size = transport_state.read_message(&msg, self.buffer.as_mut()).unwrap().clone();
+            let size = transport_state.read_message(&msg, self.buffer.as_mut()).unwrap();
             println!("Received : {}", String::from_utf8_lossy(&self.buffer[..size]));
         };
     }

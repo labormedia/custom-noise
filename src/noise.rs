@@ -14,7 +14,8 @@ pub struct NoiseInstance {
     handshake_state: HandshakeState,
 }
 
-impl NoiseInstance {
+impl NoiseInstance 
+{
     fn build(stream: TcpStream,params:NoiseParams, handshake_state:HandshakeState) -> Self {
         NoiseInstance {
             stream,
@@ -37,9 +38,10 @@ impl NoiseInstance {
     }
 
     // .read_message(&recv(&mut stream).unwrap(), &mut buf).unwrap()
-    pub async fn handshake_listen(&mut self) -> usize {
-        let message = self.recv().await.unwrap();
-        self.handshake_state.read_message(&message, &mut self.buffer).unwrap()
+    pub async fn handshake_listen(&mut self) -> io::Result<()> {
+        let message = self.recv().await?;
+        self.handshake_state.read_message(&message, &mut self.buffer).unwrap();
+        Ok(())
     }
 
     pub async fn handshake_send(&mut self, payload: &[u8]) {
@@ -76,10 +78,10 @@ impl NoiseInstance {
     /// Reference : https://github.com/mcginty/snow/blob/master/examples/simple.rs#L110
     pub async fn recv(&mut self) -> io::Result<Vec<u8>> {
         let mut msg_len_buf = [0u8; 2];
-        self.stream.read_exact(&mut msg_len_buf).await.unwrap(); 
+        self.stream.read_exact(&mut msg_len_buf).await?; 
         let msg_len = ((msg_len_buf[0] as usize) << 8) + (msg_len_buf[1] as usize);
         let mut msg = vec![0u8; msg_len];
-        self.stream.read_exact(&mut msg[..]).await.unwrap();
+        self.stream.read_exact(&mut msg[..]).await?;
         Ok(msg)
     }
 

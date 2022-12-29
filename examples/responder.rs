@@ -32,11 +32,12 @@ async fn main() {
     }
 } // The stream is closed here
 
-async fn listen_nn_handshake(mut noise_instance: NoiseInstance) {
+async fn listen_nn_handshake(mut noise_instance: NoiseInstance) -> Option<usize> {
     noise_instance.handshake_listen().await;
     noise_instance.handshake_send(&[0u8; 0]).await;
     noise_instance.handshake_listen().await;
     noise_instance.transport_listen().await;
+    None
 }
 
 fn usage_message() {

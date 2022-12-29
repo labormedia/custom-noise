@@ -22,7 +22,7 @@ async fn main() {
 
 } // the stream is closed here
 
-async fn initiate_nn_handshake(mut noise_instance: NoiseInstance) {
+async fn initiate_nn_handshake(mut noise_instance: NoiseInstance) -> Option<usize> {
     noise_instance.handshake_send(&[]).await;
     noise_instance.handshake_listen().await;
     noise_instance.handshake_send(&[]).await;
@@ -30,6 +30,7 @@ async fn initiate_nn_handshake(mut noise_instance: NoiseInstance) {
     let msg = b"we really care";
     noise_instance.transport_send(msg).await;
     println!("Sent : {}", String::from_utf8_lossy(msg));
+    None
 }
 
 fn usage_message() {
